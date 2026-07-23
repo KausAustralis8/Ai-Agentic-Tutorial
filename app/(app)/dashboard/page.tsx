@@ -1,6 +1,7 @@
 import { currentUser } from "@/lib/auth/currentUser";
 import OrbitDashboard from "@/components/OrbitDashboard";
-import { demoAgents, demoTeams, demoStats, demoActivity } from "@/lib/demoData";
+import { listAgents, listTeams } from "@/lib/agents/store";
+import { demoStats, demoActivity } from "@/lib/demoData";
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -8,10 +9,13 @@ export default async function DashboardPage() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
+  const agents = user ? await listAgents(user.id) : [];
+  const teams = user ? await listTeams(user.id) : [];
+
   return (
     <OrbitDashboard
-      agents={demoAgents}
-      teams={demoTeams}
+      agents={agents}
+      teams={teams}
       stats={demoStats}
       activity={demoActivity}
       greeting={`${greeting}, ${first}!`}

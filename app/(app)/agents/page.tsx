@@ -1,5 +1,11 @@
-import ComingSoon from "@/components/ComingSoon";
+import { currentUser } from "@/lib/auth/currentUser";
+import { listAgents, listTeams } from "@/lib/agents/store";
+import AgentsView from "@/components/agents/AgentsView";
 
-export default function AgentsPage() {
-  return <ComingSoon title="Agents" description="Meet your ready-made AI team, and build your own agents and pods — coming soon." />;
+export default async function AgentsPage() {
+  const user = await currentUser();
+  const agents = user ? await listAgents(user.id) : [];
+  const teams = user ? await listTeams(user.id) : [];
+
+  return <AgentsView agents={agents} teams={teams} />;
 }
