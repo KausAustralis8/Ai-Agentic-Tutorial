@@ -1,3 +1,4 @@
+"use client";
 import { css } from "@/components/primitives";
 
 const glassEdge = "rgba(186,215,247,.12)";
