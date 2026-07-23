@@ -49,6 +49,8 @@ export const agentConfig = pgTable(
   {
     userId: text("user_id").notNull(),
     agentId: text("agent_id").notNull(),
+    name: text("name"),
+    initials: text("initials"),
     role: text("role"),
     goal: text("goal"),
     permissions: jsonb("permissions").notNull().default({}),

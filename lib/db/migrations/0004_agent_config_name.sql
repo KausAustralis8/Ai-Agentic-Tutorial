@@ -1,0 +1,2 @@
+ALTER TABLE agent_config ADD COLUMN IF NOT EXISTS name TEXT;
+ALTER TABLE agent_config ADD COLUMN IF NOT EXISTS initials TEXT;

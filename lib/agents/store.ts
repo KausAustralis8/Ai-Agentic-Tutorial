@@ -59,6 +59,8 @@ export async function listAgents(userId: string): Promise<AgentView[]> {
       const paused = st?.paused ?? false;
       return {
         ...a,
+        name: cfg?.name || a.name,
+        initials: cfg?.initials || a.initials,
         role: cfg?.role || a.role,
         goal: cfg?.goal || a.goal,
         paused,

@@ -35,15 +35,18 @@ const inputStyle: React.CSSProperties = {
 
 export default function AgentDetail({ agent }: { agent: AgentView }) {
   const router = useRouter();
+  const [name, setName] = useState(agent.name);
   const [role, setRole] = useState(agent.role);
   const [goal, setGoal] = useState(agent.goal);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [isPending, startTransition] = useTransition();
   const m = statusMeta(agent.paused ? "offline" : agent.status);
+  const canSave = name.trim().length > 0;
 
   function handleSave() {
+    if (!canSave) return;
     startTransition(async () => {
-      await updateAgentIdentity(agent.id, { role, goal });
+      await updateAgentIdentity(agent.id, { name, role, goal });
       router.refresh();
     });
   }
@@ -70,8 +73,13 @@ export default function AgentDetail({ agent }: { agent: AgentView }) {
         <div style={css("display:flex;align-items:center;gap:14px")}>
           <div style={css(av(agent, 56))}>{agent.initials}</div>
           <div style={css("flex:1")}>
-            <div style={css("font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;color:#ffffff")}>{agent.name}</div>
-            <div style={css("display:flex;align-items:center;gap:6px;margin-top:4px")}>
+            <input
+              style={{ ...inputStyle, fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 20, padding: "6px 10px" }}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Agent name"
+            />
+            <div style={css("display:flex;align-items:center;gap:6px;margin-top:8px")}>
               <span style={css("width:7px;height:7px;border-radius:50%;background:" + m.dot)} />
               <span style={css("font-family:'Inter',sans-serif;font-size:12.5px;color:#9da7ba")}>{agent.paused ? "Paused" : m.label}</span>
               {agent.isPreset && <span style={css("font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;color:#9da7ba;margin-left:6px")}>READY-MADE</span>}
@@ -104,7 +112,11 @@ export default function AgentDetail({ agent }: { agent: AgentView }) {
         </div>
 
         <div style={css("display:flex;gap:12px")}>
-          <Box onClick={handleSave} style={pillPrimary + (isPending ? ";opacity:.6" : "")} styleHover={isPending ? undefined : pillPrimaryHover}>
+          <Box
+            onClick={handleSave}
+            style={pillPrimary + (isPending || !canSave ? ";opacity:.6;cursor:not-allowed" : "")}
+            styleHover={isPending || !canSave ? undefined : pillPrimaryHover}
+          >
             {isPending ? "Saving…" : "Save changes"}
           </Box>
           <Box onClick={handlePauseToggle} style={pillGhost} styleHover="background:rgba(186,214,247,.06)">
