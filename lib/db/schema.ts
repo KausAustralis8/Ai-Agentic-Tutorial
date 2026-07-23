@@ -8,3 +8,17 @@ export const users = pgTable("users", {
   notifications: jsonb("notifications").notNull().default({}),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const creatorProfile = pgTable("creator_profile", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  niche: text("niche"),
+  bio: text("bio"),
+  platforms: jsonb("platforms").notNull().default([]),
+  audience: jsonb("audience").notNull().default({}),
+  tone: text("tone"),
+  pastDeals: text("past_deals"),
+  rateFloor: text("rate_floor"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
