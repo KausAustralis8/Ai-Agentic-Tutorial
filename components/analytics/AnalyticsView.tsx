@@ -86,7 +86,7 @@ export default function AnalyticsView({
           <div style={css("display:flex;flex-direction:column;gap:12px")}>
             {ranking.map((r) => (
               <div key={r.agentId} style={css("display:flex;align-items:center;gap:12px")}>
-                <span style={css(av(r.agent!, 26))}>{r.agent!.initials}</span>
+                <span style={css(av(r.agent!, 26))}>{!r.agent!.avatarUrl && r.agent!.initials}</span>
                 <div style={css("flex:1;display:flex;flex-direction:column;gap:4px")}>
                   <div style={css("font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:#ffffff")}>{r.agent!.name}</div>
                   <div style={css("width:100%;height:5px;border-radius:3px;background:rgba(186,214,247,.1);overflow:hidden")}>

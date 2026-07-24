@@ -9,6 +9,7 @@ export interface OrbitAgent {
   name: string;
   initials: string;
   color: string;
+  avatarUrl?: string | null;
   status: "working" | "waiting" | "offline" | "error";
   capabilities?: string[];
 }
@@ -225,7 +226,7 @@ export default function OrbitDashboard({ agents, teams, stats, activity, greetin
             <Box key={n.a.id} aria-label={n.a.name} style={"position:absolute;left:" + n.x + "px;top:" + n.y + "px;transform:translate(-50%,-50%);width:170px;display:flex;flex-direction:column;align-items:center;z-index:2"}>
               <div style={css("display:flex;flex-direction:column;align-items:center;gap:6px;animation:floaty " + (5 + (n.i % 3)) + "s ease-in-out " + (n.i * 0.45).toFixed(2) + "s infinite")}>
                 <div style={css("position:relative")}>
-                  <div style={css("padding:3px;border-radius:50%;background:rgba(5,6,15,.9);box-shadow:inset 0 0 0 1px " + glassEdge + ", 0 0 22px " + n.a.color + "55")}><div style={css(av(n.a, 46) + ";border:2px solid rgba(5,6,15,.97)")}>{n.a.initials}</div></div>
+                  <div style={css("padding:3px;border-radius:50%;background:rgba(5,6,15,.9);box-shadow:inset 0 0 0 1px " + glassEdge + ", 0 0 22px " + n.a.color + "55")}><div style={css(av(n.a, 46) + ";border:2px solid rgba(5,6,15,.97)")}>{!n.a.avatarUrl && n.a.initials}</div></div>
                   <div style={css("position:absolute;top:-8px;right:-10px;width:22px;height:22px;border-radius:50%;background:rgba(5,6,15,.9);box-shadow:inset 0 0 0 1px " + glassEdge + ";display:flex;align-items:center;justify-content:center;animation:" + n.ic[0])}><span style={css(hubIcon(n.type, n.ic[1]))} /></div>
                 </div>
                 <div style={css("display:flex;align-items:center;gap:5px;margin-top:2px")}><span style={css("width:7px;height:7px;border-radius:50%;background:" + n.m.dot + ";flex:none;" + (n.a.status === "working" ? "animation:pulse 2s infinite" : ""))} /><span style={css("font-family:'Inter',sans-serif;font-size:12px;font-weight:700;color:#ffffff")}>{n.a.name}</span></div>

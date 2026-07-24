@@ -52,7 +52,7 @@ function AgentCard({ agent, onOpen }: { agent: AgentView; onOpen: () => void }) 
       styleHover="transform:translateY(-2px)"
     >
       <div style={css("display:flex;align-items:center;gap:12px")}>
-        <div style={css(av(agent, 44))}>{agent.initials}</div>
+        <div style={css(av(agent, 44))}>{!agent.avatarUrl && agent.initials}</div>
         <div style={css("flex:1;min-width:0")}>
           <div style={css("font-family:'Inter',sans-serif;font-size:15px;font-weight:700;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis")}>
             {agent.name}
@@ -204,7 +204,7 @@ function NewTeamForm({ agents, onClose }: { agents: AgentView[]; onClose: () => 
                   : "background:rgba(186,214,247,.06);color:#c7d3ea;box-shadow:inset 0 0 0 1px " + glassEdge)
               }
             >
-              <span style={css(av(a, 20))}>{a.initials}</span>
+              <span style={css(av(a, 20))}>{!a.avatarUrl && a.initials}</span>
               {a.name}
             </Box>
           ))}
@@ -285,7 +285,7 @@ export default function AgentsView({ agents, teams }: { agents: AgentView[]; tea
                     if (!a) return null;
                     return (
                       <div key={id} title={a.name} style={css(av(a, 30) + ";border:2px solid #05060f;margin-left:-8px")}>
-                        {a.initials}
+                        {!a.avatarUrl && a.initials}
                       </div>
                     );
                   })}

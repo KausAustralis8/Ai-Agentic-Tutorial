@@ -12,6 +12,7 @@ export async function listAgents(userId: string): Promise<AgentView[]> {
     initials: t.initials,
     role: t.role,
     color: t.color,
+    avatarUrl: null,
     status: "working",
     task: t.task,
     goal: t.goal,
@@ -43,6 +44,7 @@ export async function listAgents(userId: string): Promise<AgentView[]> {
     initials: r.initials,
     role: r.role,
     color: r.color,
+    avatarUrl: null,
     status: (r.status as AgentView["status"]) ?? "waiting",
     task: r.task ?? "Ready to get to work",
     goal: r.goal ?? "",
@@ -64,6 +66,7 @@ export async function listAgents(userId: string): Promise<AgentView[]> {
         role: cfg?.role || a.role,
         goal: cfg?.goal || a.goal,
         color: cfg?.color || a.color,
+        avatarUrl: cfg?.avatarUrl || a.avatarUrl,
         paused,
         status: paused ? ("waiting" as const) : a.status,
       };

@@ -20,7 +20,13 @@ export function hubIcon(type: string, color: string, size = 14): string {
   hubIconCache.set(ck, out); return out;
 }
 
-export function av(a: { id: string; color: string; char?: number }, size: number): string {
+export function av(a: { id: string; color: string; avatarUrl?: string | null; char?: number }, size: number): string {
+  if (a.avatarUrl) {
+    return (
+      "width:" + size + "px;height:" + size + "px;border-radius:50%;flex:none;background-image:url(\"" + a.avatarUrl + "\");" +
+      "background-size:cover;background-position:center"
+    );
+  }
   return "width:" + size + "px;height:" + size + "px;border-radius:50%;flex:none;display:flex;" +
     "align-items:center;justify-content:center;background:" + a.color + ";color:#fff;" +
     "font-weight:700;font-size:" + Math.round(size * 0.37) + "px";

@@ -8,6 +8,7 @@ export interface AgentView {
   initials: string;
   role: string;
   color: string;
+  avatarUrl: string | null;
   status: AgentStatus;
   task: string;
   goal: string;

@@ -102,7 +102,7 @@ export default function ChatView({ initialMessages, agents }: { initialMessages:
             }
             styleHover="background:rgba(186,214,247,.12)"
           >
-            <span style={css(av(a, 18))}>{a.initials}</span>@{a.name.split(" ")[0]}
+            <span style={css(av(a, 18))}>{!a.avatarUrl && a.initials}</span>@{a.name.split(" ")[0]}
           </Box>
         ))}
       </div>
@@ -120,7 +120,7 @@ export default function ChatView({ initialMessages, agents }: { initialMessages:
             <div key={m.id} style={css("display:flex;flex-direction:column;gap:5px;align-items:" + (isMe ? "flex-end" : "flex-start"))}>
               {!isMe && agent && (
                 <div style={css("display:flex;align-items:center;gap:6px")}>
-                  <span style={css(av(agent, 18))}>{agent.initials}</span>
+                  <span style={css(av(agent, 18))}>{!agent.avatarUrl && agent.initials}</span>
                   <span style={css("font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:#c7d3ea")}>{agent.name}</span>
                 </div>
               )}

@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { css, Box } from "@/components/primitives";
@@ -38,6 +39,15 @@ const FEATURES = [
   },
 ];
 
+const TICKER_ITEMS = [
+  "Discover new brands automatically",
+  "Pitch deals in your own voice",
+  "Book a call just by asking",
+  "Track every brand deal, start to finish",
+  "Draft priced proposals in seconds",
+  "Follow up so nothing goes cold",
+];
+
 const STEPS = [
   { n: "1", title: "Build your Media Kit", desc: "Tell us your niche, your audience, your platforms, and your rates. This is what every helper grounds its work on." },
   { n: "2", title: "Meet your AI team", desc: "Five ready-made agents — Research, Outreach, Proposal, Follow-up, and Scheduler — start working for you immediately." },
@@ -51,6 +61,27 @@ const pillGhost = "font-family:'Inter',sans-serif;font-weight:500;color:#ffffff;
 const pillOutlined = "font-family:'Inter',sans-serif;font-weight:500;color:#d1e4fa;background:transparent;border-radius:999px;cursor:pointer;transition:background .12s;box-shadow:inset 0 0 0 1px " + glassEdge;
 const pillPrimary = "font-family:'Inter',sans-serif;font-weight:600;color:#ffffff;background:#663af3;border-radius:999px;cursor:pointer;transition:all .15s;box-shadow:0 0 0 1px rgba(102,58,243,.5), 0 8px 24px rgba(102,58,243,.4)";
 const pillPrimaryHover = "background:#7a51f5;box-shadow:0 0 0 1px rgba(122,81,245,.7), 0 8px 32px rgba(102,58,243,.6)";
+
+function Ticker() {
+  const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
+  return (
+    <div style={css("width:100%;overflow:hidden;background:rgba(102,58,243,.08);border-bottom:1px solid " + glassEdge)}>
+      <div style={{ display: "flex", width: "max-content", animation: "marquee 26s linear infinite" }}>
+        {items.map((t, i) => (
+          <div
+            key={i}
+            style={css(
+              "display:flex;align-items:center;gap:10px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:#d1e4fa;white-space:nowrap;padding:8px 24px"
+            )}
+          >
+            <span style={css("color:#b57bff")}>✦</span>
+            {t}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Eyebrow({ label }: { label: string }) {
   return (
@@ -66,8 +97,15 @@ export default function LandingPage() {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useUser();
 
+  useEffect(() => {
+    if (isLoaded && isSignedIn) router.replace("/dashboard");
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded || isSignedIn) return null;
+
   return (
     <main style={css("position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column")}>
+      <Ticker />
       {/* nav */}
       <nav style={css("display:flex;align-items:center;justify-content:space-between;padding:18px 26px;max-width:1200px;width:100%;margin:0 auto")}>
         <div style={css("font-family:'Inter',sans-serif;font-weight:500;font-size:16px;color:#d1e4fa")}>Agentic Sales Team</div>

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { css, Box } from "@/components/primitives";
 import { statusMeta } from "@/lib/data";
@@ -35,12 +35,42 @@ const inputStyle: React.CSSProperties = {
 
 const SWATCHES = ["#663af3", "#027dea", "#269684", "#e46d4c", "#b6d9fc", "#7c5cf0", "#22b8a3", "#f4a13f"];
 
+function resizeImageToDataUrl(file: File, size: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Could not load image"));
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("No canvas context"));
+          return;
+        }
+        const scale = Math.max(size / img.width, size / img.height);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function AgentDetail({ agent }: { agent: AgentView }) {
   const router = useRouter();
+  const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(agent.name);
   const [role, setRole] = useState(agent.role);
   const [goal, setGoal] = useState(agent.goal);
   const [color, setColor] = useState(agent.color);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(agent.avatarUrl);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [isPending, startTransition] = useTransition();
   const m = statusMeta(agent.paused ? "offline" : agent.status);
@@ -49,9 +79,21 @@ export default function AgentDetail({ agent }: { agent: AgentView }) {
   function handleSave() {
     if (!canSave) return;
     startTransition(async () => {
-      await updateAgentIdentity(agent.id, { name, role, goal, color });
+      await updateAgentIdentity(agent.id, { name, role, goal, color, avatarUrl });
       router.refresh();
     });
+  }
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const resized = await resizeImageToDataUrl(file, 160);
+      setAvatarUrl(resized);
+    } catch {
+      // ignore unreadable image files
+    }
   }
   function handlePauseToggle() {
     startTransition(async () => {
@@ -74,7 +116,26 @@ export default function AgentDetail({ agent }: { agent: AgentView }) {
 
       <div style={css(glassCard + ";padding:28px;display:flex;flex-direction:column;gap:20px")}>
         <div style={css("display:flex;align-items:center;gap:14px")}>
-          <div style={css(av({ ...agent, color }, 56))}>{agent.initials}</div>
+          <div style={css("position:relative")}>
+            <Box
+              onClick={() => fileRef.current?.click()}
+              style={css(av({ ...agent, color, avatarUrl }, 56) + ";cursor:pointer")}
+              styleHover="opacity:.85"
+            >
+              {!avatarUrl && agent.initials}
+            </Box>
+            <Box
+              onClick={() => fileRef.current?.click()}
+              style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:#663af3;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 0 2px #0b0d18"
+              styleHover="background:#7a51f5"
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 7h3l2-2h6l2 2h3v13H4Z" />
+                <circle cx="12" cy="13.5" r="3.5" />
+              </svg>
+            </Box>
+            <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
+          </div>
           <div style={css("flex:1")}>
             <input
               style={{ ...inputStyle, fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 20, padding: "6px 10px" }}
@@ -86,6 +147,11 @@ export default function AgentDetail({ agent }: { agent: AgentView }) {
               <span style={css("width:7px;height:7px;border-radius:50%;background:" + m.dot)} />
               <span style={css("font-family:'Inter',sans-serif;font-size:12.5px;color:#9da7ba")}>{agent.paused ? "Paused" : m.label}</span>
               {agent.isPreset && <span style={css("font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;color:#9da7ba;margin-left:6px")}>READY-MADE</span>}
+              {avatarUrl && (
+                <Box onClick={() => setAvatarUrl(null)} style="font-family:'Inter',sans-serif;font-size:11.5px;color:#9da7ba;cursor:pointer;margin-left:6px" styleHover="color:#e46d4c">
+                  Remove photo
+                </Box>
+              )}
             </div>
           </div>
         </div>

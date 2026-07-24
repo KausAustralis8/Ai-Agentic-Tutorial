@@ -277,7 +277,7 @@ function LeadCard({
       {lead.platform && <div style={css("font-family:'Inter',sans-serif;font-size:12px;color:#9da7ba")}>{lead.platform}</div>}
       {agent && (
         <div style={css("display:flex;align-items:center;gap:6px")}>
-          <span style={css(av(agent, 18))}>{agent.initials}</span>
+          <span style={css(av(agent, 18))}>{!agent.avatarUrl && agent.initials}</span>
           <span style={css("font-family:'Inter',sans-serif;font-size:12px;color:#c7d3ea")}>{agent.name}</span>
         </div>
       )}
