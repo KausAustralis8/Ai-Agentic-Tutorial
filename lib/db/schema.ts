@@ -53,6 +53,7 @@ export const agentConfig = pgTable(
     initials: text("initials"),
     role: text("role"),
     goal: text("goal"),
+    color: text("color"),
     permissions: jsonb("permissions").notNull().default({}),
     settings: jsonb("settings").notNull().default({}),
   },

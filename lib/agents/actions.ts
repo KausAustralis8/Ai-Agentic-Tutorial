@@ -37,7 +37,7 @@ export async function createAgent(data: CreateAgentInput): Promise<string | unde
   return id;
 }
 
-export async function updateAgentIdentity(agentId: string, patch: { name?: string; role?: string; goal?: string }) {
+export async function updateAgentIdentity(agentId: string, patch: { name?: string; role?: string; goal?: string; color?: string }) {
   const user = await currentUser();
   if (!user || !isDbConfigured()) return;
   const db = getDb();
@@ -45,10 +45,10 @@ export async function updateAgentIdentity(agentId: string, patch: { name?: strin
   const initials = name ? initialsFor(name) : undefined;
   await db
     .insert(agentConfig)
-    .values({ userId: user.id, agentId, name, initials, role: patch.role, goal: patch.goal })
+    .values({ userId: user.id, agentId, name, initials, role: patch.role, goal: patch.goal, color: patch.color })
     .onConflictDoUpdate({
       target: [agentConfig.userId, agentConfig.agentId],
-      set: { name, initials, role: patch.role, goal: patch.goal },
+      set: { name, initials, role: patch.role, goal: patch.goal, color: patch.color },
     });
   revalidatePath("/agents");
   revalidatePath(`/agents/${agentId}`);

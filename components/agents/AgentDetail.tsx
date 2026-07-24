@@ -33,11 +33,14 @@ const inputStyle: React.CSSProperties = {
   width: "100%",
 };
 
+const SWATCHES = ["#663af3", "#027dea", "#269684", "#e46d4c", "#b6d9fc", "#7c5cf0", "#22b8a3", "#f4a13f"];
+
 export default function AgentDetail({ agent }: { agent: AgentView }) {
   const router = useRouter();
   const [name, setName] = useState(agent.name);
   const [role, setRole] = useState(agent.role);
   const [goal, setGoal] = useState(agent.goal);
+  const [color, setColor] = useState(agent.color);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [isPending, startTransition] = useTransition();
   const m = statusMeta(agent.paused ? "offline" : agent.status);
@@ -46,7 +49,7 @@ export default function AgentDetail({ agent }: { agent: AgentView }) {
   function handleSave() {
     if (!canSave) return;
     startTransition(async () => {
-      await updateAgentIdentity(agent.id, { name, role, goal });
+      await updateAgentIdentity(agent.id, { name, role, goal, color });
       router.refresh();
     });
   }
@@ -71,7 +74,7 @@ export default function AgentDetail({ agent }: { agent: AgentView }) {
 
       <div style={css(glassCard + ";padding:28px;display:flex;flex-direction:column;gap:20px")}>
         <div style={css("display:flex;align-items:center;gap:14px")}>
-          <div style={css(av(agent, 56))}>{agent.initials}</div>
+          <div style={css(av({ ...agent, color }, 56))}>{agent.initials}</div>
           <div style={css("flex:1")}>
             <input
               style={{ ...inputStyle, fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 20, padding: "6px 10px" }}
@@ -109,6 +112,23 @@ export default function AgentDetail({ agent }: { agent: AgentView }) {
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
           />
+        </div>
+        <div style={css("display:flex;flex-direction:column;gap:7px")}>
+          <div style={css("font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:#c7d3ea")}>Color</div>
+          <div style={css("display:flex;gap:10px")}>
+            {SWATCHES.map((sw) => (
+              <Box
+                key={sw}
+                onClick={() => setColor(sw)}
+                style={
+                  "width:28px;height:28px;border-radius:50%;cursor:pointer;background:" +
+                  sw +
+                  ";box-shadow:" +
+                  (color === sw ? "0 0 0 2px #05060f, 0 0 0 4px " + sw : "none")
+                }
+              />
+            ))}
+          </div>
         </div>
 
         <div style={css("display:flex;gap:12px")}>

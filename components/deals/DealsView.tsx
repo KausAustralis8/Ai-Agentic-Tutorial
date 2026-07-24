@@ -413,11 +413,28 @@ export default function DealsView({
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [discovering, setDiscovering] = useState(false);
+  const [discoverResult, setDiscoverResult] = useState<number | null>(null);
   const [, startTransition] = useTransition();
 
   const byId = (id: string | null) => (id ? agents.find((a) => a.id === id) : undefined);
   const pending = leads.filter((l) => l.review === "pending");
   const accepted = leads.filter((l) => l.review === "accepted");
+  const researchAgent = agents.find((a) => a.capabilities.includes("scrape"));
+
+  async function handleDiscover() {
+    setDiscovering(true);
+    setDiscoverResult(null);
+    const res = await fetch("/api/scrape", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ agentId: researchAgent?.id ?? null }),
+    });
+    const data = await res.json().catch(() => ({ added: 0 }));
+    setDiscoverResult(data.added ?? 0);
+    router.refresh();
+    setDiscovering(false);
+  }
 
   function handleAccept(id: string) {
     setBusyId(id);
@@ -459,7 +476,23 @@ export default function DealsView({
       {showImport && <ImportCsvForm agents={agents} onClose={() => setShowImport(false)} />}
 
       <div style={css("display:flex;flex-direction:column;gap:14px")}>
-        <div style={css("font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:#d8ecf8")}>Pending review</div>
+        <div style={css("display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px")}>
+          <div style={css("font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:#d8ecf8")}>Pending review</div>
+          <div style={css("display:flex;align-items:center;gap:12px")}>
+            {discoverResult !== null && (
+              <span style={css("font-family:'Inter',sans-serif;font-size:12.5px;color:#7ee2a8")}>
+                Found {discoverResult} new brand{discoverResult === 1 ? "" : "s"}
+              </span>
+            )}
+            <Box
+              onClick={() => !discovering && handleDiscover()}
+              style={pillGhost + (discovering ? ";opacity:.6;cursor:wait" : "")}
+              styleHover={discovering ? undefined : "background:rgba(186,214,247,.06)"}
+            >
+              {discovering ? "Searching…" : "Discover brands"}
+            </Box>
+          </div>
+        </div>
         {pending.length === 0 ? (
           <div style={css(glassCard + ";padding:20px;font-family:'Inter',sans-serif;font-size:13.5px;color:#9da7ba")}>
             Nothing waiting — brands your agents discover on the web will land here for your approval.

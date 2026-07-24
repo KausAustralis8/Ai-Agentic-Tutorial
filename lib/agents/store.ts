@@ -63,6 +63,7 @@ export async function listAgents(userId: string): Promise<AgentView[]> {
         initials: cfg?.initials || a.initials,
         role: cfg?.role || a.role,
         goal: cfg?.goal || a.goal,
+        color: cfg?.color || a.color,
         paused,
         status: paused ? ("waiting" as const) : a.status,
       };
