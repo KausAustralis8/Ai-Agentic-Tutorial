@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { css, Box } from "@/components/primitives";
 import { av } from "@/lib/visuals";
 import { addLead, setLeadStage, acceptLead, rejectLead, importLeadsCsv } from "@/lib/leads/actions";
-import { enqueueResearch, enqueueProposal, enqueueFollowup } from "@/lib/jobs/actions";
+import { enqueueResearch, enqueueProposal, enqueueFollowup, enqueueOutreach } from "@/lib/jobs/actions";
+import { bookMeetingFromText } from "@/lib/meetings/actions";
 import { STAGES } from "@/lib/leads/types";
 import type { LeadView, LeadStatus } from "@/lib/leads/types";
 import type { AgentView } from "@/lib/agents/types";
@@ -185,20 +186,27 @@ function LeadCard({
   agent,
   proposal,
   followup,
+  schedulerAgentId,
 }: {
   lead: LeadView;
   agent?: AgentView;
   proposal?: ProposalView;
   followup?: DraftView;
+  schedulerAgentId: string | null;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [writingBrief, setWritingBrief] = useState(false);
   const [showBrief, setShowBrief] = useState(false);
+  const [writingPitch, setWritingPitch] = useState(false);
   const [writingProposal, setWritingProposal] = useState(false);
   const [showProposal, setShowProposal] = useState(false);
   const [writingFollowup, setWritingFollowup] = useState(false);
   const [showFollowup, setShowFollowup] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
+  const [bookingText, setBookingText] = useState("");
+  const [booking, setBooking] = useState(false);
+  const [bookingResult, setBookingResult] = useState<string | null>(null);
 
   function handleStage(status: LeadStatus) {
     startTransition(async () => {
@@ -214,6 +222,15 @@ function LeadCard({
     router.refresh();
     setWritingBrief(false);
     setShowBrief(true);
+  }
+
+  async function handleDraftPitch() {
+    setWritingPitch(true);
+    const jobId = await enqueueOutreach(lead.id, lead.agentId);
+    if (jobId) await fetch("/api/jobs/run", { method: "POST" });
+    router.refresh();
+    setWritingPitch(false);
+    setShowFollowup(true);
   }
 
   async function handleDraftProposal() {
@@ -232,6 +249,21 @@ function LeadCard({
     router.refresh();
     setWritingFollowup(false);
     setShowFollowup(true);
+  }
+
+  async function handleBookCall() {
+    if (!bookingText.trim()) return;
+    setBooking(true);
+    setBookingResult(null);
+    const res = await bookMeetingFromText({ text: bookingText, leadId: lead.id, agentId: schedulerAgentId ?? lead.agentId });
+    if (res.ok) {
+      setBookingResult(`Booked — ${res.whenLabel}`);
+      setBookingText("");
+      router.refresh();
+    } else {
+      setBookingResult("Couldn't work that out — try something like \"next Tuesday at 2pm\".");
+    }
+    setBooking(false);
   }
 
   const mailtoHref = followup
@@ -314,6 +346,14 @@ function LeadCard({
         </Box>
       )}
 
+      <Box
+        onClick={() => !writingPitch && handleDraftPitch()}
+        style={pillGhost + ";font-size:12px;width:fit-content" + (writingPitch ? ";opacity:.6;cursor:wait" : "")}
+        styleHover={writingPitch ? undefined : "background:rgba(186,214,247,.06)"}
+      >
+        {writingPitch ? "Drafting pitch…" : followup ? "Draft a new pitch" : "Draft pitch"}
+      </Box>
+
       {proposal ? (
         <div style={css("display:flex;flex-direction:column;gap:8px")}>
           <Box
@@ -364,7 +404,7 @@ function LeadCard({
             style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:#b6d9fc;cursor:pointer;width:fit-content"
             styleHover="color:#d1e4fa"
           >
-            {showFollowup ? "Hide follow-up" : "View follow-up"}
+            {showFollowup ? "Hide latest message" : "View latest message"}
           </Box>
           {showFollowup && (
             <div style={css("display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:10px;background:rgba(186,214,247,.04);box-shadow:inset 0 0 0 1px " + glassEdge)}>
@@ -394,6 +434,37 @@ function LeadCard({
           {writingFollowup ? "Writing follow-up…" : "Write follow-up"}
         </Box>
       )}
+
+      <div style={css("display:flex;flex-direction:column;gap:8px")}>
+        <Box
+          onClick={() => setShowBooking((v) => !v)}
+          style={pillGhost + ";font-size:12px;width:fit-content"}
+          styleHover="background:rgba(186,214,247,.06)"
+        >
+          {showBooking ? "Hide booking" : "Book a call"}
+        </Box>
+        {showBooking && (
+          <div style={css("display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:10px;background:rgba(186,214,247,.04);box-shadow:inset 0 0 0 1px " + glassEdge)}>
+            <input
+              style={{ ...selectStyle, fontSize: 12.5, padding: "8px 10px" }}
+              value={bookingText}
+              onChange={(e) => setBookingText(e.target.value)}
+              placeholder='e.g. "next Tuesday at 2pm"'
+              onKeyDown={(e) => e.key === "Enter" && !booking && handleBookCall()}
+            />
+            <Box
+              onClick={() => !booking && handleBookCall()}
+              style={pillGhost + ";font-size:11.5px;padding:6px 12px;width:fit-content" + (booking ? ";opacity:.6;cursor:wait" : "")}
+              styleHover={booking ? undefined : "background:rgba(186,214,247,.06)"}
+            >
+              {booking ? "Booking…" : "Book"}
+            </Box>
+            {bookingResult && (
+              <div style={css("font-family:'Inter',sans-serif;font-size:12px;color:#7ee2a8")}>{bookingResult}</div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -421,6 +492,7 @@ export default function DealsView({
   const pending = leads.filter((l) => l.review === "pending");
   const accepted = leads.filter((l) => l.review === "accepted");
   const researchAgent = agents.find((a) => a.capabilities.includes("scrape"));
+  const schedulerAgent = agents.find((a) => a.capabilities.includes("book-meeting"));
 
   async function handleDiscover() {
     setDiscovering(true);
@@ -486,10 +558,10 @@ export default function DealsView({
             )}
             <Box
               onClick={() => !discovering && handleDiscover()}
-              style={pillGhost + (discovering ? ";opacity:.6;cursor:wait" : "")}
-              styleHover={discovering ? undefined : "background:rgba(186,214,247,.06)"}
+              style={pillPrimary + ";font-size:14.5px;padding:12px 24px" + (discovering ? ";opacity:.6;cursor:wait" : "")}
+              styleHover={discovering ? undefined : pillPrimaryHover}
             >
-              {discovering ? "Searching…" : "Discover brands"}
+              {discovering ? "Searching…" : "✦ Discover brands"}
             </Box>
           </div>
         </div>
@@ -535,6 +607,7 @@ export default function DealsView({
                       agent={byId(lead.agentId)}
                       proposal={proposalsByLead[lead.id]}
                       followup={followupsByLead[lead.id]}
+                      schedulerAgentId={schedulerAgent?.id ?? null}
                     />
                   ))}
                 </div>

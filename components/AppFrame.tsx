@@ -1,8 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { css, Box } from "@/components/primitives";
+import { dismissAllActivity } from "@/lib/activity/actions";
+import type { ActivityItem } from "@/lib/activity/store";
+import type { AgentView } from "@/lib/agents/types";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: "M12 3v18 M3 12h18" },
@@ -21,12 +24,29 @@ const NAV_ITEMS = [
 
 const glassEdge = "rgba(186,215,247,.12)";
 
-export default function AppFrame({ userName, children }: { userName: string; children: React.ReactNode }) {
+export default function AppFrame({
+  userName,
+  notifications = [],
+  agents = [],
+  children,
+}: {
+  userName: string;
+  notifications?: ActivityItem[];
+  agents?: AgentView[];
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isNarrow, setIsNarrow] = useState(false);
   const [query, setQuery] = useState("");
+  const [bellOpen, setBellOpen] = useState(false);
+  const [items, setItems] = useState(notifications);
+  const bellRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setItems(notifications);
+  }, [notifications]);
 
   useEffect(() => {
     const on = () => setIsNarrow(window.innerWidth < 900);
@@ -37,7 +57,27 @@ export default function AppFrame({ userName, children }: { userName: string; chi
 
   useEffect(() => {
     setMobileOpen(false);
+    setBellOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!bellOpen) return;
+    function onClick(e: MouseEvent) {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) setBellOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [bellOpen]);
+
+  function agentName(agentId: string | null) {
+    if (!agentId) return null;
+    return agents.find((a) => a.id === agentId)?.name ?? null;
+  }
+
+  async function handleClearAll() {
+    setItems([]);
+    await dismissAllActivity();
+  }
 
   const sidebarWidth = 236;
   const sidebarTransform = isNarrow ? (mobileOpen ? "translateX(0)" : "translateX(-100%)") : "translateX(0)";
@@ -126,6 +166,59 @@ export default function AppFrame({ userName, children }: { userName: string; chi
             </div>
           </div>
           <div style={css("display:flex;align-items:center;gap:10px")}>
+            <div ref={bellRef} style={css("position:relative")}>
+              <Box
+                onClick={() => setBellOpen((v) => !v)}
+                style={"width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;background:rgba(186,214,247,.06);box-shadow:inset 0 0 0 1px " + glassEdge}
+                styleHover="background:rgba(186,214,247,.12)"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#d1e4fa" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                  <path d="M10 20a2 2 0 0 0 4 0" />
+                </svg>
+                {items.length > 0 && (
+                  <span
+                    style={css(
+                      "position:absolute;top:5px;right:5px;min-width:15px;height:15px;border-radius:999px;background:#e46d4c;color:#fff;font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 3px"
+                    )}
+                  >
+                    {items.length > 9 ? "9+" : items.length}
+                  </span>
+                )}
+              </Box>
+              {bellOpen && (
+                <div
+                  style={css(
+                    "position:absolute;top:44px;right:0;width:320px;max-height:400px;overflow-y:auto;background:rgba(8,10,20,.98);border-radius:14px;box-shadow:inset 0 0 0 1px " +
+                      glassEdge +
+                      ", 0 24px 48px rgba(6,6,14,.7);z-index:20;display:flex;flex-direction:column"
+                  )}
+                >
+                  <div style={css("display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid " + glassEdge)}>
+                    <span style={css("font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:#ffffff")}>Notifications</span>
+                    {items.length > 0 && (
+                      <Box onClick={handleClearAll} style="font-family:'Inter',sans-serif;font-size:12px;color:#9da7ba;cursor:pointer" styleHover="color:#d1e4fa">
+                        Clear all
+                      </Box>
+                    )}
+                  </div>
+                  {items.length === 0 ? (
+                    <div style={css("padding:20px;font-family:'Inter',sans-serif;font-size:12.5px;color:#9da7ba;text-align:center")}>
+                      Nothing new — you're all caught up.
+                    </div>
+                  ) : (
+                    items.map((n) => (
+                      <div key={n.id} style={css("padding:10px 14px;border-bottom:1px solid rgba(186,215,247,.06)")}>
+                        <div style={css("font-family:'Inter',sans-serif;font-size:12.5px;color:#d1e4fa;line-height:1.4")}>
+                          {agentName(n.agentId) && <span style={css("font-weight:600;color:#ffffff")}>{agentName(n.agentId)} </span>}
+                          {n.text}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
             <span style={css("font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;color:#d1e4fa;white-space:nowrap")}>{userName}</span>
             <UserButton afterSignOutUrl="/" />
           </div>

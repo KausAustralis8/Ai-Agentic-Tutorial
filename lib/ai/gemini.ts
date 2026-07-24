@@ -19,7 +19,7 @@ interface CallOpts {
 
 async function callGemini(system: string, turns: Turn[], opts: CallOpts = {}): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const model = process.env.GEMINI_MODEL || "gemini-flash-latest";
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -28,9 +28,8 @@ async function callGemini(system: string, turns: Turn[], opts: CallOpts = {}): P
       systemInstruction: { parts: [{ text: system }] },
       contents: turns.map((t) => ({ role: t.role === "model" ? "model" : "user", parts: [{ text: t.text }] })),
       generationConfig: {
-        maxOutputTokens: opts.maxTokens ?? 700,
+        maxOutputTokens: opts.maxTokens ?? 900,
         temperature: opts.temperature ?? 0.6,
-        thinkingConfig: { thinkingBudget: 0 },
         ...(opts.responseSchema ? { responseMimeType: "application/json", responseSchema: opts.responseSchema } : {}),
       },
     };

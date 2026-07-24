@@ -1,4 +1,4 @@
-import { pgTable, text, jsonb, timestamp, boolean, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, jsonb, timestamp, boolean, primaryKey, serial } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -157,6 +157,27 @@ export const proposals = pgTable("proposals", {
   status: text("status").notNull().default("draft"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   sentAt: timestamp("sent_at", { withTimezone: true }),
+});
+
+export const meetings = pgTable("meetings", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  agentId: text("agent_id"),
+  leadId: text("lead_id"),
+  title: text("title").notNull(),
+  kind: text("kind").notNull().default("call"),
+  whenAt: timestamp("when_at", { withTimezone: true }).notNull(),
+  whenLabel: text("when_label").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  agentId: text("agent_id"),
+  who: text("who").notNull(),
+  text: text("text").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const jobs = pgTable("jobs", {

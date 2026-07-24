@@ -11,6 +11,14 @@ export async function enqueueResearch(leadId: string, agentId: string | null) {
   return id;
 }
 
+export async function enqueueOutreach(leadId: string, agentId: string | null) {
+  const user = await currentUser();
+  if (!user) return null;
+  const id = await enqueueJob({ userId: user.id, agentId, kind: "outreach", params: { leadId } });
+  revalidatePath("/deals");
+  return id;
+}
+
 export async function enqueueProposal(leadId: string, agentId: string | null) {
   const user = await currentUser();
   if (!user) return null;

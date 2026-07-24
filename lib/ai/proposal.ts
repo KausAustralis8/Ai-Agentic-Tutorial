@@ -61,7 +61,7 @@ export async function draftProposal(lead: LeadFacts, creatorContext: string, cre
   ];
 
   try {
-    const result = await geminiJSON<ProposalResult>(system, turns, PROPOSAL_SCHEMA, { maxTokens: 700, temperature: 0.6 });
+    const result = await geminiJSON<ProposalResult>(system, turns, PROPOSAL_SCHEMA, { maxTokens: 1600, temperature: 0.6 });
     const fb = fallback(lead.name);
     return {
       title: result.title || fb.title,

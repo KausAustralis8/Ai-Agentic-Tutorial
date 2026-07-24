@@ -52,15 +52,41 @@ interface Props {
   activity: OrbitActivityItem[];
   greeting?: string;
   avatarUrl?: string;
+  livePoll?: boolean;
 }
 
-export default function OrbitDashboard({ agents, teams, stats, activity, greeting, avatarUrl }: Props) {
+export default function OrbitDashboard({ agents, teams, stats, activity, greeting, avatarUrl, livePoll }: Props) {
   const [dims, setDims] = useState({ w: 1280, h: 800 });
   const [reduced, setReduced] = useState(false);
   const [hubTeam, setHubTeam] = useState("all");
   const [tick, setTick] = useState(0);
+  const [activeIds, setActiveIds] = useState<Set<string>>(new Set());
 
-  const byId = (id: string) => agents.find((a) => a.id === id);
+  useEffect(() => {
+    if (!livePoll) return;
+    let cancelled = false;
+    async function poll() {
+      try {
+        const res = await fetch("/api/jobs/active");
+        const data = await res.json();
+        if (!cancelled) setActiveIds(new Set(data.agentIds ?? []));
+      } catch {
+        // ignore transient poll failures
+      }
+    }
+    poll();
+    const id = setInterval(poll, 3500);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [livePoll]);
+
+  const displayAgents = livePoll
+    ? agents.map((a) => ({ ...a, status: (activeIds.has(a.id) ? "working" : "waiting") as OrbitAgent["status"] }))
+    : agents;
+
+  const byId = (id: string) => displayAgents.find((a) => a.id === id);
   const ws = stats;
   const acts = activity;
   const paMap = new Map(ws.perAgent.map((p) => [p.agentId, p]));
@@ -86,7 +112,7 @@ export default function OrbitDashboard({ agents, teams, stats, activity, greetin
 
   const hubMembers = (
     hubTeam === "all"
-      ? agents.slice(0, 8)
+      ? displayAgents.slice(0, 8)
       : ((teams.find((t) => t.id === hubTeam) || teams[0])?.members ?? []).map((id) => byId(id))
   ).filter(Boolean) as OrbitAgent[];
   const HN = Math.max(hubMembers.length, 1);

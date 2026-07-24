@@ -12,6 +12,7 @@ body {
   font-family: Inter, system-ui, sans-serif;
   background: #05060f;
   color: #d1e4fa;
+  color-scheme: dark;
 }
 a {
   color: inherit;

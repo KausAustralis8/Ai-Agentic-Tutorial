@@ -68,7 +68,7 @@ export async function draftFollowup(
   ];
 
   try {
-    const result = await geminiJSON<FollowupResult>(system, turns, FOLLOWUP_SCHEMA, { maxTokens: 400, temperature: 0.6 });
+    const result = await geminiJSON<FollowupResult>(system, turns, FOLLOWUP_SCHEMA, { maxTokens: 900, temperature: 0.6 });
     const fb = fallback(lead.name);
     return {
       subject: result.subject || fb.subject,

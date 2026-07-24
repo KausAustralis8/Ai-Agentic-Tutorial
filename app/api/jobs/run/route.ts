@@ -10,9 +10,10 @@ import { getProfile, profileSummary, creatorDisplayName } from "@/lib/profile/st
 import { draftResearch, type ResearchResult } from "@/lib/ai/research";
 import { draftProposal } from "@/lib/ai/proposal";
 import { draftFollowup } from "@/lib/ai/followup";
+import { draftOutreach } from "@/lib/ai/outreach";
 import { recordActivity } from "@/lib/activity/store";
 
-const HANDLED_KINDS = ["research", "proposal", "follow-up"];
+const HANDLED_KINDS = ["research", "proposal", "follow-up", "outreach"];
 
 export async function POST() {
   const user = await currentUser();
@@ -91,6 +92,40 @@ export async function POST() {
           type: "proposal_drafted",
           leadId,
           text: `drafted a proposal for ${lead.name}`,
+        });
+      }
+
+      if (job.kind === "outreach") {
+        const { leadId } = job.params as { leadId: string };
+        const [lead] = await db
+          .select()
+          .from(leads)
+          .where(and(eq(leads.userId, user.id), eq(leads.id, leadId)))
+          .limit(1);
+        if (!lead) throw new Error("Lead not found");
+
+        const pitch = await draftOutreach(
+          { name: lead.name, company: lead.company, email: lead.email, platform: lead.platform, research: lead.research as ResearchResult | null },
+          creatorContext,
+          creatorDisplayName(user.name, user.email)
+        );
+        await db.insert(outreachDrafts).values({
+          id: crypto.randomUUID(),
+          userId: user.id,
+          agentId: job.agentId,
+          leadId,
+          subject: pitch.subject,
+          body: pitch.body,
+          rationale: pitch.rationale,
+          status: "draft",
+        });
+        await db.update(leads).set({ status: pitch.stage, score: String(pitch.score), updatedAt: new Date() }).where(eq(leads.id, leadId));
+        await recordActivity({
+          userId: user.id,
+          agentId: job.agentId,
+          type: "email_drafted",
+          leadId,
+          text: `drafted a pitch for ${lead.name}`,
         });
       }
 
