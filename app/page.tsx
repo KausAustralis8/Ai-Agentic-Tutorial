@@ -1,10 +1,19 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { css, Box } from "@/components/primitives";
 import OrbitDashboard from "@/components/OrbitDashboard";
 import { demoAgents, demoTeams, demoStats, demoActivity } from "@/lib/demoData";
+import type { OrbitAgent, OrbitTeam, OrbitStats, OrbitActivityItem } from "@/components/OrbitDashboard";
+
+interface Showcase {
+  available: boolean;
+  agents?: OrbitAgent[];
+  teams?: OrbitTeam[];
+  stats?: OrbitStats;
+  activity?: OrbitActivityItem[];
+}
 
 const FEATURES = [
   {
@@ -71,10 +80,10 @@ function Ticker() {
           <div
             key={i}
             style={css(
-              "display:flex;align-items:center;gap:10px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:#d1e4fa;white-space:nowrap;padding:8px 24px"
+              "display:flex;align-items:center;gap:12px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#d1e4fa;white-space:nowrap;padding:12px 28px"
             )}
           >
-            <span style={css("color:#b57bff")}>✦</span>
+            <span style={css("color:#b57bff;font-size:16px")}>✦</span>
             {t}
           </div>
         ))}
@@ -96,19 +105,33 @@ function Eyebrow({ label }: { label: string }) {
 export default function LandingPage() {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useUser();
+  const [showcase, setShowcase] = useState<Showcase | null>(null);
 
   useEffect(() => {
     if (isLoaded && isSignedIn) router.replace("/dashboard");
   }, [isLoaded, isSignedIn, router]);
 
+  useEffect(() => {
+    fetch("/api/showcase")
+      .then((r) => r.json())
+      .then((data: Showcase) => setShowcase(data))
+      .catch(() => setShowcase({ available: false }));
+  }, []);
+
   if (!isLoaded || isSignedIn) return null;
+
+  const heroAgents = showcase?.available ? showcase.agents! : demoAgents;
+  const heroTeams = showcase?.available ? showcase.teams! : demoTeams;
+  const heroStats = showcase?.available ? showcase.stats! : demoStats;
+  const heroActivity = showcase?.available ? showcase.activity! : demoActivity;
 
   return (
     <main style={css("position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column")}>
+      <div style={css("position:sticky;top:0;z-index:10;background:#05060f;box-shadow:0 1px 0 " + glassEdge)}>
       <Ticker />
       {/* nav */}
       <nav style={css("display:flex;align-items:center;justify-content:space-between;padding:18px 26px;max-width:1200px;width:100%;margin:0 auto")}>
-        <div style={css("font-family:'Inter',sans-serif;font-weight:500;font-size:16px;color:#d1e4fa")}>Agentic Sales Team</div>
+        <div style={css("font-family:'Inter',sans-serif;font-weight:500;font-size:16px;color:#d1e4fa")}>Twilight Agents</div>
         <div style={css("display:flex;align-items:center;gap:10px")}>
           {!isLoaded ? null : isSignedIn ? (
             <>
@@ -129,6 +152,7 @@ export default function LandingPage() {
           )}
         </div>
       </nav>
+      </div>
 
       {/* hero */}
       <section style={css("padding:24px 26px 16px;max-width:1200px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:26px")}>
@@ -149,12 +173,12 @@ export default function LandingPage() {
             Your AI sales team, always working the room
           </div>
           <div style={css("font-family:'Inter',sans-serif;font-size:17.5px;line-height:1.6;color:#c7d3ea;max-width:600px")}>
-            Agentic Sales Team finds brands, pitches them as you, prices the deal, follows up, and books the call —
+            Twilight Agents finds brands, pitches them as you, prices the deal, follows up, and books the call —
             so you can spend your time making content, not chasing sponsors.
           </div>
         </div>
 
-        <OrbitDashboard agents={demoAgents} teams={demoTeams} stats={demoStats} activity={demoActivity} />
+        <OrbitDashboard agents={heroAgents} teams={heroTeams} stats={heroStats} activity={heroActivity} />
       </section>
 
       {/* features */}
@@ -205,7 +229,7 @@ export default function LandingPage() {
           <div style={css("font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:clamp(24px,2.8vw,32px);color:#d8ecf8;letter-spacing:-.01em")}>Built for creators, not managers</div>
           <div style={css("font-family:'Inter',sans-serif;font-size:16px;line-height:1.7;color:#c7d3ea")}>
             If you're a content creator who wants brand deals but doesn't have a manager — or the hours — to chase
-            them, Agentic Sales Team is the manager. You bring the audience; your AI team handles the busywork of
+            them, Twilight Agents is the manager. You bring the audience; your AI team handles the busywork of
             finding, pitching, pricing, and following up.
           </div>
         </div>
@@ -232,8 +256,8 @@ export default function LandingPage() {
 
       {/* footer */}
       <footer style={css("padding:26px;max-width:1200px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(186,215,247,.12)")}>
-        <div style={css("font-family:'Inter',sans-serif;font-weight:500;font-size:14px;color:#d1e4fa")}>Agentic Sales Team</div>
-        <div style={css("font-family:'Inter',sans-serif;font-size:12.5px;color:#9da7ba")}>© {new Date().getFullYear()} Agentic Sales Team</div>
+        <div style={css("font-family:'Inter',sans-serif;font-weight:500;font-size:14px;color:#d1e4fa")}>Twilight Agents</div>
+        <div style={css("font-family:'Inter',sans-serif;font-size:12.5px;color:#9da7ba")}>© {new Date().getFullYear()} Twilight Agents</div>
       </footer>
     </main>
   );

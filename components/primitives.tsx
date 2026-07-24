@@ -4,11 +4,29 @@ import type { CSSProperties, KeyboardEvent, MouseEvent, ReactNode } from "react"
 
 export type Style = string | CSSProperties;
 
+function splitDeclarations(input: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let current = "";
+  for (const ch of input) {
+    if (ch === "(") depth++;
+    if (ch === ")") depth--;
+    if (ch === ";" && depth === 0) {
+      parts.push(current);
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  if (current) parts.push(current);
+  return parts;
+}
+
 export function css(input?: Style): CSSProperties {
   if (!input) return {};
   if (typeof input !== "string") return input;
   const o: Record<string, string> = {};
-  for (const decl of input.split(";")) {
+  for (const decl of splitDeclarations(input)) {
     const i = decl.indexOf(":");
     if (i < 0) continue;
     const prop = decl.slice(0, i).trim();

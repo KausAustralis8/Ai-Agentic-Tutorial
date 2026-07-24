@@ -99,7 +99,7 @@ export default function AppFrame({
         )}
       >
         <div style={css("font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:#d1e4fa;padding:6px 10px 18px")}>
-          Agentic Sales Team
+          Twilight Agents
         </div>
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href;
