@@ -1,8 +1,10 @@
 "use client";
 import { useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { saveProfile } from "@/lib/profile/actions";
 import { css, Box } from "@/components/primitives";
 import type { CreatorProfileData, PlatformEntry } from "@/lib/profile/types";
+import type { SocialAccountView } from "@/lib/social/store";
 
 const glassEdge = "rgba(186,215,247,.12)";
 const glassCard =
@@ -47,7 +49,69 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const emptyPlatformRow = (): PlatformEntry => ({ platform: "", handle: "", followers: "", engagementRate: "" });
 
-export default function ProfileEditor({ initial }: { initial: CreatorProfileData }) {
+function TikTokCard({ connected }: { connected: SocialAccountView | null }) {
+  const params = useSearchParams();
+  const status = params.get("tiktok");
+
+  return (
+    <Section title="Connect TikTok">
+      {connected ? (
+        <div style={css("display:flex;align-items:center;gap:14px")}>
+          {connected.avatarUrl && (
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                backgroundImage: `url("${connected.avatarUrl}")`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                flex: "none",
+              }}
+            />
+          )}
+          <div>
+            <div style={css("font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#ffffff")}>
+              Connected as {connected.username ? `@${connected.username}` : connected.displayName}
+            </div>
+            <div style={css("font-family:'Inter',sans-serif;font-size:12.5px;color:#9da7ba;margin-top:2px")}>
+              Your follower stats and photo are synced into your Media Kit and dashboard.
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div style={css("font-family:'Inter',sans-serif;font-size:13.5px;color:#c7d3ea;line-height:1.5")}>
+            Auto-fill your follower stats and put your profile photo at the center of your dashboard.
+          </div>
+          <a href="/api/auth/tiktok/start" style={{ textDecoration: "none", alignSelf: "flex-start" }}>
+            <Box as="span" style={pillPrimary} styleHover={pillPrimaryHover}>
+              Connect TikTok
+            </Box>
+          </a>
+        </>
+      )}
+      {status === "connected" && (
+        <div style={css("font-family:'Inter',sans-serif;font-size:13px;color:#7ee2a8")}>TikTok connected — your stats are synced!</div>
+      )}
+      {status === "error" && (
+        <div style={css("font-family:'Inter',sans-serif;font-size:13px;color:#e46d4c")}>
+          Couldn't connect TikTok — please try again.
+        </div>
+      )}
+    </Section>
+  );
+}
+
+export default function ProfileEditor({
+  initial,
+  tiktokAvailable,
+  tiktokConnected,
+}: {
+  initial: CreatorProfileData;
+  tiktokAvailable: boolean;
+  tiktokConnected: SocialAccountView | null;
+}) {
   const [niche, setNiche] = useState(initial.niche);
   const [bio, setBio] = useState(initial.bio);
   const [platforms, setPlatforms] = useState<PlatformEntry[]>(initial.platforms.length ? initial.platforms : [emptyPlatformRow()]);
@@ -91,6 +155,8 @@ export default function ProfileEditor({ initial }: { initial: CreatorProfileData
           This is what every AI helper grounds its work on — keep it up to date.
         </div>
       </div>
+
+      {tiktokAvailable && <TikTokCard connected={tiktokConnected} />}
 
       <Section title="The basics">
         <Field label="Your niche">

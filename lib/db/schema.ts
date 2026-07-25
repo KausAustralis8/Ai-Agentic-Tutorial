@@ -181,6 +181,26 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const socialAccounts = pgTable(
+  "social_accounts",
+  {
+    userId: text("user_id").notNull(),
+    provider: text("provider").notNull(),
+    openId: text("open_id"),
+    username: text("username"),
+    displayName: text("display_name"),
+    avatarUrl: text("avatar_url"),
+    refreshToken: text("refresh_token"),
+    accessTokenExpiresAt: timestamp("access_token_expires_at", { withTimezone: true }),
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at", { withTimezone: true }),
+    scope: text("scope"),
+    snapshot: jsonb("snapshot").notNull().default({}),
+    needsReconnect: boolean("needs_reconnect").notNull().default(false),
+    connectedAt: timestamp("connected_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({ pk: primaryKey({ columns: [t.userId, t.provider] }) })
+);
+
 export const jobs = pgTable("jobs", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),
