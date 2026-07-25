@@ -126,7 +126,7 @@ export default function AppFrame({
 
       <div
         style={css(
-          "transition:margin .2s ease;margin-left:" + (isNarrow ? 0 : sidebarWidth) + "px;min-height:100dvh;display:flex;flex-direction:column"
+          "transition:margin .2s ease;margin-left:" + (isNarrow ? 0 : sidebarWidth) + "px;height:100dvh;overflow:hidden;display:flex;flex-direction:column"
         )}
       >
         <header style={css("display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 22px;border-bottom:1px solid " + glassEdge)}>
@@ -223,7 +223,7 @@ export default function AppFrame({
             <UserButton afterSignOutUrl="/" />
           </div>
         </header>
-        <main style={css("flex:1;display:flex;flex-direction:column;padding:24px 26px;gap:18px")}>{children}</main>
+        <main style={css("flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding:24px 26px;gap:18px")}>{children}</main>
       </div>
     </div>
   );

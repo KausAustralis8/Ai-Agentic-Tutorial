@@ -30,11 +30,15 @@ button {
   background-image:
     linear-gradient(rgba(182, 217, 252, 0.09) 1px, transparent 1px),
     linear-gradient(90deg, rgba(182, 217, 252, 0.09) 1px, transparent 1px),
-    radial-gradient(ellipse 800px 420px at 50% 0%, rgba(124, 145, 182, 0.5), transparent 70%);
-  background-size: 88px 88px, 88px 88px, 100% 100%;
-  mask-image: radial-gradient(ellipse 90% 80% at 50% 20%, black 40%, transparent 85%);
-  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 20%, black 40%, transparent 85%);
+    radial-gradient(ellipse 620px 380px at 82% 6%, rgba(244, 63, 126, 0.28), transparent 68%),
+    radial-gradient(ellipse 700px 460px at 12% 4%, rgba(102, 58, 243, 0.4), transparent 70%),
+    radial-gradient(ellipse 900px 520px at 50% 0%, rgba(124, 145, 182, 0.5), transparent 72%);
+  background-size: 88px 88px, 88px 88px, 100% 100%, 100% 100%, 100% 100%;
+  mask-image: radial-gradient(ellipse 95% 85% at 50% 15%, black 40%, transparent 88%);
+  -webkit-mask-image: radial-gradient(ellipse 95% 85% at 50% 15%, black 40%, transparent 88%);
 }
+
+@keyframes twinkle { 0%, 100% { opacity: .15; transform: scale(.7) rotate(0deg); } 50% { opacity: 1; transform: scale(1.15) rotate(20deg); } }
 
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }

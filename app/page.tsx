@@ -71,6 +71,41 @@ const pillOutlined = "font-family:'Inter',sans-serif;font-weight:500;color:#d1e4
 const pillPrimary = "font-family:'Inter',sans-serif;font-weight:600;color:#ffffff;background:#663af3;border-radius:999px;cursor:pointer;transition:all .15s;box-shadow:0 0 0 1px rgba(102,58,243,.5), 0 8px 24px rgba(102,58,243,.4)";
 const pillPrimaryHover = "background:#7a51f5;box-shadow:0 0 0 1px rgba(122,81,245,.7), 0 8px 32px rgba(102,58,243,.6)";
 
+const SPARKLE_POS = [
+  { top: "6%", left: "8%", size: 10, delay: 0, dur: 3.2, color: "#f43f7e" },
+  { top: "14%", left: "88%", size: 14, delay: 0.6, dur: 3.8, color: "#b57bff" },
+  { top: "40%", left: "3%", size: 8, delay: 1.1, dur: 2.8, color: "#663af3" },
+  { top: "60%", left: "94%", size: 11, delay: 0.3, dur: 3.4, color: "#f43f7e" },
+  { top: "80%", left: "10%", size: 9, delay: 1.6, dur: 3, color: "#b57bff" },
+  { top: "26%", left: "60%", size: 7, delay: 0.9, dur: 2.6, color: "#d1e4fa" },
+  { top: "92%", left: "70%", size: 10, delay: 0.2, dur: 3.6, color: "#663af3" },
+  { top: "4%", left: "45%", size: 8, delay: 1.3, dur: 3.1, color: "#f43f7e" },
+];
+
+function Sparkles() {
+  return (
+    <div style={css("position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0")}>
+      {SPARKLE_POS.map((s, i) => (
+        <svg
+          key={i}
+          width={s.size}
+          height={s.size}
+          viewBox="0 0 24 24"
+          fill={s.color}
+          style={{
+            position: "absolute",
+            top: s.top,
+            left: s.left,
+            animation: `twinkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
+          }}
+        >
+          <path d="M12 2l1.9 6.8a2.4 2.4 0 0 0 1.7 1.7L22 12l-6.4 1.5a2.4 2.4 0 0 0-1.7 1.7L12 22l-1.9-6.8a2.4 2.4 0 0 0-1.7-1.7L2 12l6.4-1.5a2.4 2.4 0 0 0 1.7-1.7L12 2Z" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 function Ticker() {
   const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
   return (
@@ -112,7 +147,7 @@ export default function LandingPage() {
   }, [isLoaded, isSignedIn, router]);
 
   useEffect(() => {
-    fetch("/api/showcase")
+    fetch("/api/showcase", { cache: "no-store" })
       .then((r) => r.json())
       .then((data: Showcase) => setShowcase(data))
       .catch(() => setShowcase({ available: false }));
@@ -130,7 +165,7 @@ export default function LandingPage() {
       <div style={css("position:sticky;top:0;z-index:10;background:#05060f;box-shadow:0 1px 0 " + glassEdge)}>
       <Ticker />
       {/* nav */}
-      <nav style={css("display:flex;align-items:center;justify-content:space-between;padding:18px 26px;max-width:1200px;width:100%;margin:0 auto")}>
+      <nav style={css("display:flex;align-items:center;justify-content:space-between;padding:18px 32px;width:100%")}>
         <div style={css("font-family:'Inter',sans-serif;font-weight:500;font-size:16px;color:#d1e4fa")}>Twilight Agents</div>
         <div style={css("display:flex;align-items:center;gap:10px")}>
           {!isLoaded ? null : isSignedIn ? (
@@ -155,8 +190,9 @@ export default function LandingPage() {
       </div>
 
       {/* hero */}
-      <section style={css("padding:24px 26px 16px;max-width:1200px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:26px")}>
-        <div style={css("max-width:780px;display:flex;flex-direction:column;gap:20px;animation:fadeUp .3s ease")}>
+      <section style={css("position:relative;padding:24px 26px 16px;max-width:1200px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:26px")}>
+        <Sparkles />
+        <div style={css("position:relative;z-index:1;max-width:780px;display:flex;flex-direction:column;gap:20px;animation:fadeUp .3s ease")}>
           <div style={css("display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:500;letter-spacing:.08em;color:#c7d3ea;background:rgba(186,214,247,.06);border-radius:999px;padding:5px 13px;width:fit-content;box-shadow:inset 0 0 0 1px " + glassEdge)}>
             <span style={css("width:6px;height:6px;border-radius:50%;background:#269684;animation:pulse 2s infinite")} />
             AI-POWERED BRAND DEALS
@@ -164,10 +200,11 @@ export default function LandingPage() {
           <div
             style={{
               ...css("font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(36px,6.2vw,68px);line-height:1.02;letter-spacing:-.03em"),
-              background: "linear-gradient(180deg,#d8ecf8 0%,#98c0ef 100%)",
+              backgroundImage: "linear-gradient(120deg,#f9d9ff 0%,#b57bff 55%,#f43f7e 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
+              filter: "drop-shadow(0 0 28px rgba(181,123,255,.35))",
             }}
           >
             Your AI sales team, always working the room
@@ -241,7 +278,7 @@ export default function LandingPage() {
         <div
           style={{
             ...css("font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(32px,5vw,56px);line-height:1.05;letter-spacing:-.02em;max-width:640px"),
-            background: "linear-gradient(180deg,#d8ecf8 0%,#98c0ef 100%)",
+            backgroundImage: "linear-gradient(180deg,#d8ecf8 0%,#98c0ef 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
