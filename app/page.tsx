@@ -294,7 +294,11 @@ export default function LandingPage() {
       {/* footer */}
       <footer style={css("padding:26px;max-width:1200px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(186,215,247,.12)")}>
         <div style={css("font-family:'Inter',sans-serif;font-weight:500;font-size:14px;color:#d1e4fa")}>Twilight Agents</div>
-        <div style={css("font-family:'Inter',sans-serif;font-size:12.5px;color:#9da7ba")}>© {new Date().getFullYear()} Twilight Agents</div>
+        <div style={css("display:flex;align-items:center;gap:18px")}>
+          <a href="/terms" style={css("font-family:'Inter',sans-serif;font-size:12.5px;color:#9da7ba")}>Terms</a>
+          <a href="/privacy" style={css("font-family:'Inter',sans-serif;font-size:12.5px;color:#9da7ba")}>Privacy</a>
+          <div style={css("font-family:'Inter',sans-serif;font-size:12.5px;color:#9da7ba")}>© {new Date().getFullYear()} Twilight Agents</div>
+        </div>
       </footer>
     </main>
   );
